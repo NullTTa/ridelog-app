@@ -68,9 +68,21 @@ ridelog/
 
 ## 실행 방법
 
+### 준비물
+- JDK 17 이상 (JDK 25에서도 빌드·실행 확인)
+- Maven 3.9 이상 (저장소에 Maven Wrapper `mvnw`가 없으므로 별도 설치 필요)
+- Flutter 3.x (Flutter 3.47.9 / Dart 3.13에서 `flutter analyze`·`flutter test` 확인)
+
 ### 1) 서버
 IntelliJ / STS에서 `server` 폴더를 Maven 프로젝트로 열고 `RidelogServerApplication` 실행
-(또는 터미널에서 `cd server && mvn spring-boot:run`)
+(또는 터미널에서 아래처럼 실행 — Windows PowerShell 5.1은 `&&`를 지원하지 않으므로 두 줄로 입력)
+
+```bash
+cd server
+mvn spring-boot:run
+```
+
+- 실행 후 `http://localhost:8080/api/summary` 에 접속해 JSON이 오면 정상입니다.
 
 - 기본은 H2 파일 DB라 DB 설치 없이 바로 실행됩니다. → `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:file:./data/ridelog`)
 - MySQL 사용 시: `ridelog` 스키마 생성 후 `application.yml`의 계정 수정 → `mysql` 프로필로 실행
