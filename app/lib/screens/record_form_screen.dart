@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../models/category.dart';
 import '../models/maintenance_record.dart';
-import '../services/api_service.dart';
+import '../services/record_repository.dart';
 import '../utils/format.dart';
 
 /// 정비 기록 등록 / 수정 화면 (initial 이 있으면 수정 모드)
@@ -18,7 +18,7 @@ class RecordFormScreen extends StatefulWidget {
 
 class _RecordFormScreenState extends State<RecordFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _api = ApiService();
+  final RecordRepository _api = Repositories.current;
 
   late Category _category;
   late DateTime _date;

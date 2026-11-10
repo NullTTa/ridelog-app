@@ -6,6 +6,7 @@ import '../config.dart';
 import '../models/category.dart';
 import '../models/maintenance_record.dart';
 import '../models/summary.dart';
+import 'record_repository.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -14,8 +15,8 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Spring Boot 서버(/api)와 통신하는 클래스
-class ApiService {
+/// Spring Boot 서버(/api)와 통신하는 클래스 (서버 모드)
+class ApiService implements RecordRepository {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
@@ -25,6 +26,20 @@ class ApiService {
   Uri _uri(String path, [Map<String, String>? query]) =>
       Uri.parse('${AppConfig.baseUrl}/api$path').replace(queryParameters: query);
 
+  @override
+  bool get isDemo => false;
+
+  /// 서버 접속 확인: /api/summary 가 제한 시간 안에 2xx 로 응답하면 true
+  Future<bool> ping({Duration timeout = const Duration(seconds: 3)}) async {
+    try {
+      final res = await _client.get(_uri('/summary')).timeout(timeout);
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   Future<List<MaintenanceRecord>> fetchRecords({Category? category}) async {
     final res = await _send(() => _client.get(
           _uri('/records', category == null ? null : {'category': category.code}),
@@ -33,11 +48,13 @@ class ApiService {
     return list.map((e) => MaintenanceRecord.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  @override
   Future<MaintenanceRecord> fetchRecord(int id) async {
     final res = await _send(() => _client.get(_uri('/records/$id')));
     return MaintenanceRecord.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  @override
   Future<MaintenanceRecord> createRecord(MaintenanceRecord record) async {
     final res = await _send(() => _client.post(
           _uri('/records'),
@@ -47,6 +64,7 @@ class ApiService {
     return MaintenanceRecord.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  @override
   Future<MaintenanceRecord> updateRecord(int id, MaintenanceRecord record) async {
     final res = await _send(() => _client.put(
           _uri('/records/$id'),
@@ -56,14 +74,23 @@ class ApiService {
     return MaintenanceRecord.fromJson(_decode(res) as Map<String, dynamic>);
   }
 
+  @override
   Future<void> deleteRecord(int id) async {
     final res = await _send(() => _client.delete(_uri('/records/$id')));
     _decode(res);
   }
 
+  @override
   Future<Summary> fetchSummary() async {
     final res = await _send(() => _client.get(_uri('/summary')));
     return Summary.fromJson(_decode(res) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<List<Category>> fetchCategories() async {
+    final res = await _send(() => _client.get(_uri('/categories')));
+    final list = _decode(res) as List;
+    return list.map((e) => Category.fromCode((e as Map<String, dynamic>)['code'] as String)).toList();
   }
 
   // ---- 공통 처리 ----

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/maintenance_record.dart';
-import '../services/api_service.dart';
+import '../services/record_repository.dart';
 import '../utils/format.dart';
 import 'record_form_screen.dart';
 
@@ -15,7 +15,7 @@ class RecordDetailScreen extends StatefulWidget {
 }
 
 class _RecordDetailScreenState extends State<RecordDetailScreen> {
-  final _api = ApiService();
+  final RecordRepository _api = Repositories.current;
   MaintenanceRecord? _record;
   String? _error;
 

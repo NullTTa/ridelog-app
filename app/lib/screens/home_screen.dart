@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../models/maintenance_record.dart';
 import '../models/summary.dart';
-import '../services/api_service.dart';
+import '../services/record_repository.dart';
 import '../widgets/record_tile.dart';
 import '../widgets/summary_card.dart';
 import 'record_detail_screen.dart';
@@ -17,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _api = ApiService();
+  final RecordRepository _api = Repositories.current;
 
   List<MaintenanceRecord> _records = [];
   Summary? _summary;
@@ -77,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('RideLog', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
+          if (_api.isDemo) const _DemoBadge(),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh), tooltip: '새로고침'),
         ],
       ),
@@ -148,6 +149,29 @@ class _HomeScreenState extends State<HomeScreen> {
           chip('전체', null),
           ...Category.values.map((c) => chip(c.label, c)),
         ],
+      ),
+    );
+  }
+}
+
+/// 오프라인 데모 모드일 때만 앱바에 표시되는 작은 배지
+class _DemoBadge extends StatelessWidget {
+  const _DemoBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: '서버에 연결되지 않아 기기에 저장되는 데모 모드로 실행 중입니다.',
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: scheme.tertiaryContainer,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text('데모 모드',
+            style: TextStyle(fontSize: 11, color: scheme.onTertiaryContainer)),
       ),
     );
   }
